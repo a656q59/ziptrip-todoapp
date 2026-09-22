@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Priority {
+  low
+  medium
+  high
+  urgent
+}
+
+enum Category {
+  Work
+  Personal
+  Health
+  Learning
+  Home
+  Other
+}
+
+model User {
+  id       String @id
+  username String @unique
+  todos    Todo[]
+}
+
+model Todo {
+  id           String     @id @default(uuid())
+  title        String
+  description  String     @default("")
+  completed    Boolean    @default(false)
+  priority     Priority
+  priorityRank Int
+  category     Category
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Restrict)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  dueDate      DateTime?
+  tags         Tag[]
+
+  @@index([completed])
+  @@index([priority])
+  @@index([priorityRank])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@index([dueDate])
+  @@index([title])
+  @@index([userId])
+  @@index([category])
+}
+
+model Tag {
+  id     String @id @default(uuid())
+  name   String
+  todoId String
+  todo   Todo   @relation(fields: [todoId], references: [id], onDelete: Cascade)
+
+  @@unique([todoId, name])
+  @@index([name])
+}
